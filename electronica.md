@@ -39,6 +39,158 @@ Consecuencias que se usan después:
 - Constantes de tiempo: $\tau = RC$ y $\tau = L/R$.
 - RLC serie: frecuencia natural $f_0 = 1/(2\pi\sqrt{LC})$; oscila (subamortiguado) si $R < 2\sqrt{L/C}$. C y L intercambian energía; R la disipa.
 
+### 1.1 Kirchhoff, serie y paralelo
+
+- **Corrientes (KCL):** en un nodo, $\sum I = 0$. Es conservación de la carga.
+- **Tensiones (KVL):** en un lazo, $\sum V = 0$. Vale si el potencial está bien definido, o sea si no hay flujo magnético variable a través del lazo. Cuando lo hay, se modela como una **L** en el lazo: es la inductancia parásita de la sección 2.
+
+| | Serie | Paralelo |
+|---|---|---|
+| Qué es igual en todos | la corriente | la tensión |
+| $R$ | $R_1 + R_2 + \cdots$ | $1/R_{eq} = 1/R_1 + 1/R_2 + \cdots$; dos: $R_1R_2/(R_1+R_2)$ |
+| $C$ | $1/C_{eq} = 1/C_1 + 1/C_2 + \cdots$ | $C_1 + C_2 + \cdots$ |
+| $L$ | $L_1 + L_2 + \cdots$ (sin acople) | $1/L_{eq} = 1/L_1 + 1/L_2 + \cdots$ |
+
+Las capacidades en paralelo se suman: por eso cada dispositivo, cable e instrumento que se cuelga de un bus suma a $C_b$ (secciones 2 y 4).
+
+### 1.2 Divisor resistivo y carga
+
+```text
+Vin
+ |
+ R1
+ |
+ +------ Vout
+ |
+ R2
+ |
+GND
+```
+
+Sin carga:
+
+$$
+V_{out} = V_{in}\,\frac{R_2}{R_1 + R_2}
+$$
+
+**Con carga.** Visto desde la salida, el divisor es una fuente de Thévenin:
+
+$$
+V_{th} = V_{in}\,\frac{R_2}{R_1+R_2},
+\qquad
+R_{th} = R_1 \parallel R_2 = \frac{R_1R_2}{R_1+R_2}
+$$
+
+Con una carga $R_L$ en la salida:
+
+$$
+V_{out} = V_{th}\,\frac{R_L}{R_{th} + R_L}
+\qquad\Longrightarrow\qquad
+\frac{\delta V_{out}}{V_{out}} \approx -\frac{R_{th}}{R_L} \quad (R_L \gg R_{th})
+$$
+
+| $R_1 = R_2$ | $R_{th}$ | Corriente en reposo (3,3 V) | Error con $R_L = 1$ MΩ |
+|---|---|---|---|
+| 10 kΩ | 5 kΩ | 165 µA | −0,5 % |
+| 100 kΩ | 50 kΩ | 16,5 µA | −4,8 % |
+
+- **Compromiso:** R grandes consumen poco, pero el divisor queda más sensible a la carga y más ruidoso ($R_{th}$ grande). R chicas, al revés.
+- **ADC de muestreo:** en cada conversión conecta un capacitor interno a la entrada y lo carga desde $R_{th}$. Si $R_{th}$ es grande, no llega a cargarse en el tiempo de muestreo y la lectura queda baja. Un capacitor externo en la salida hace de reserva local (y además filtra, sección 1.5).
+- **Incerteza del cociente:** con $k = R_2/(R_1+R_2)$ y tolerancias relativas independientes $u_1$, $u_2$,
+
+$$
+\frac{u_k}{k} = \frac{R_1}{R_1+R_2}\,\sqrt{u_1^2 + u_2^2}
+$$
+
+  Con $R_1 = R_2$ al 1 %: ~0,7 % en el cociente. Un error común a las dos resistencias (misma deriva térmica) se cancela en el cociente → [[mediciones-incertezas#4. Propagación]].
+
+### 1.3 Transitorio y régimen permanente
+
+Después de un escalón, C y L se comportan distinto en el primer instante y al final:
+
+| Elemento | Justo después del escalón ($t = 0^+$) | Régimen permanente DC ($t \to \infty$) |
+|---|---|---|
+| Capacitor | cortocircuito: su tensión no puede saltar | circuito abierto: $I = C\,dV/dt = 0$ |
+| Inductor | circuito abierto: su corriente no puede saltar | cortocircuito: $V = L\,dI/dt = 0$ |
+
+"DC" describe el estado final, no la conexión: al encender o conmutar siempre hay un transitorio.
+
+### 1.4 Impedancia, reactancia y fase
+
+Para señales senoidales de frecuencia angular $\omega = 2\pi f$:
+
+$$
+Z = \frac{V}{I} = R + jX,
+\qquad
+\lvert Z\rvert = \sqrt{R^2 + X^2},
+\qquad
+\varphi = \operatorname{atan}\frac{X}{R}
+$$
+
+| Elemento | $Z$ | Reactancia $X$ | Fase de la corriente respecto de la tensión |
+|---|---|---|---|
+| R | $R$ | 0 | en fase |
+| C | $1/(j\omega C)$ | $-1/(\omega C)$ | adelanta 90° |
+| L | $j\omega L$ | $\omega L$ | atrasa 90° |
+
+- La parte **real** disipa energía. La **reactiva** la almacena y la devuelve en cada ciclo: en promedio no consume. La potencia media es $\bar P = V_{rms}\,I_{rms}\cos\varphi$.
+- La impedancia cambia la amplitud **y** la fase. Un filtro retrasa la señal además de atenuarla.
+
+### 1.5 RC como filtro pasabajos
+
+```text
+Vin --- R ---+--- Vout
+             |
+             C
+             |
+            GND
+```
+
+$$
+H(f) = \frac{V_{out}}{V_{in}} = \frac{1}{1 + j\,f/f_c},
+\qquad
+f_c = \frac{1}{2\pi RC} = \frac{1}{2\pi\tau}
+$$
+
+| Frecuencia | Módulo | Fase |
+|---|---|---|
+| $f \ll f_c$ | ≈ 1 | ≈ 0° |
+| $f = f_c$ | $1/\sqrt2$ (−3 dB) | −45° |
+| $f \gg f_c$ | ≈ $f_c/f$: cae 20 dB por década | → −90° |
+
+Tiempo y frecuencia son dos caras del mismo τ:
+- **Tiempo de subida:** $t_r(10\text{–}90\,\%) = RC\ln 9 \approx 2{,}2\,\tau$. En función de $f_c$: $t_r \approx 0{,}35/f_c$. De ahí sale el $0{,}35/t_r$ de la sección 5.1.
+- **Ancho de banda de ruido:** $\text{ENBW} = (\pi/2)\,f_c$ → [[senales-ruido#4.4 De la densidad de ruido al valor rms]].
+- Intercambiando R y C se obtiene un **pasaaltos**, con el mismo $f_c$: bloquea la continua y deja pasar las variaciones (acople de alterna).
+
+Usos: filtro antialiasing antes de un ADC → [[senales-ruido#2.2 El antialiasing va antes]], antirrebote de pulsadores, reset al encender, filtrado de ruido en una entrada.
+
+### 1.6 Escalón en un RL
+
+$$
+I(t) = \frac{V}{R}\left(1 - e^{-tR/L}\right),
+\qquad
+\tau = \frac{L}{R}
+$$
+
+Al **cortar** la corriente de una carga inductiva (relé, motor, solenoide), $dI/dt$ se hace enorme y $V = L\,dI/dt$ produce un pico de tensión que puede destruir el transistor que la maneja. Por eso se pone un **diodo de rueda libre** en paralelo con la carga: le da un camino a la corriente mientras la energía $\tfrac12 LI^2$ se disipa.
+
+### 1.7 Resonancia y analogía mecánica
+
+En resonancia, $\lvert X_L\rvert = \lvert X_C\rvert$, es decir $\omega_0 L = 1/(\omega_0 C)$, y la energía pasa entre C y L sin que la fuente tenga que aportar la parte reactiva.
+
+| RLC serie | Masa–resorte–amortiguador |
+|---|---|
+| carga $q$ | posición $x$ |
+| corriente $I$ | velocidad $v$ |
+| $L$ | masa $m$ |
+| $1/C$ | constante del resorte $k$ |
+| $R$ | amortiguamiento $c$ |
+| $f_0 = 1/(2\pi\sqrt{LC})$ | $f_0 = \frac{1}{2\pi}\sqrt{k/m}$ |
+| $Q = \frac1R\sqrt{L/C}$ | $Q = \sqrt{km}/c$ |
+
+Subamortiguado ($R < 2\sqrt{L/C}$) es lo mismo que $Q > 1/2$: la respuesta a un escalón oscila. Es la misma ecuación que la de un acelerómetro MEMS.
+
 ---
 
 ## 2. Parásitos: R, L y C que nadie puso
@@ -313,6 +465,9 @@ El level shifter bidireccional típico para I²C usa un MOSFET por línea y una 
 | La pull-up está acotada por los dos lados | $\dfrac{V_{DD}-V_{OL}}{I_{OL}} \le R \le \dfrac{t_{r,max}}{0{,}8473\,C_b}$ |
 | L y C parásitas oscilan con flancos rápidos | $f_0 = 1/(2\pi\sqrt{LC})$, subamortiguado si $R < 2\sqrt{L/C}$ |
 | El flanco, no la frecuencia, fija el ancho de banda | $f \approx 0{,}35/t_r$ |
+| Un divisor cargado cae en $R_{th}/R_L$ | $R_{th} = R_1 \parallel R_2$ |
+| RC: el mismo τ en tiempo y en frecuencia | $f_c = 1/(2\pi RC)$, $t_r \approx 2{,}2\,RC = 0{,}35/f_c$ |
+| Cortar una corriente inductiva genera un pico | $V = L\,dI/dt$ → diodo de rueda libre |
 
 ---
 
@@ -325,6 +480,10 @@ El level shifter bidireccional típico para I²C usa un MOSFET por línea y una 
 5. ¿Una señal de 1 kHz puede tener problemas de integridad de señal? ¿Por qué?
 6. ¿Qué puede y qué no puede mostrarte el analizador lógico de un flanco de SDA?
 7. ¿Por qué el capacitor de desacople tiene que estar cerca del pin, si la tensión es la misma en todo el cable?
+8. Un divisor de 100 kΩ + 100 kΩ entra a un ADC. ¿Qué dos efectos hacen que la lectura quede baja, y cómo se corrigen?
+9. ¿Cómo se comportan C y L justo después de un escalón y en régimen permanente?
+10. Un RC tiene $f_c = 1$ kHz. ¿Cuánto vale su tiempo de subida? ¿Y su ENBW?
+11. ¿Por qué hace falta un diodo en paralelo con la bobina de un relé?
 
 ---
 
@@ -335,3 +494,4 @@ El level shifter bidireccional típico para I²C usa un MOSFET por línea y una 
 - NXP AN10441, *Level shifting techniques in I2C-bus design*.
 - Espressif, hoja de datos del ESP32: pull-ups internas, *Absolute Maximum Ratings*.
 - H. Johnson y M. Graham, *High-Speed Digital Design: A Handbook of Black Magic*: ancho de banda de un flanco, longitud crítica, ringing, desacople.
+- P. Horowitz y W. Hill, *The Art of Electronics*, 3.ª ed., cap. 1: Kirchhoff, divisor y Thévenin, RC en tiempo y en frecuencia, impedancia, diodo de rueda libre.
