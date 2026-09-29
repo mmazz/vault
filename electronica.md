@@ -1,1478 +1,337 @@
-# Fundamentos eléctricos para buses y señales digitales
+# Fundamentos eléctricos para buses digitales
 
-Resumen orientado a microcontroladores, GPIO, I²C, SPI, buses y electrónica digital.
-
----
-
-# 1. Resistencia
-
-La resistencia limita la corriente.
-
-$$
-\boxed{V = RI}
-$$
-
-$$
-\boxed{I=\frac{V}{R}}
-$$
-
-Unidad:
-
-$$
-[R]=\Omega
-$$
-
-## Intuición
-
-Una resistencia dificulta el movimiento de carga.
-
-- $R\uparrow \Rightarrow I\downarrow$
-- $V\uparrow \Rightarrow I\uparrow$
-
-La resistencia disipa energía en forma de calor:
-
-$$
-\boxed{P=VI=I^2R=\frac{V^2}{R}}
-$$
+Orientado a lo que usa el proyecto: GPIO, I²C (IMU, LCD), SPI (MAX31865) y lo que muestran el analizador lógico y el osciloscopio. Supone física de circuitos: lo que ya sabés de electromagnetismo va comprimido en la sección 1.
 
 ---
 
-# 2. Capacitancia
+## 0. La idea que ordena todo
 
-Un capacitor almacena energía en un **campo eléctrico**.
+Un 0 → 1 es información, pero físicamente es **mover carga** ($Q = CV$) en un tiempo finito ($I = dQ/dt$) a través de conductores con **resistencia** ($V = RI$) e **inductancia** ($V = L\,dI/dt$).
 
-Relación fundamental:
+De ahí sale todo lo que sigue:
 
-$$
-\boxed{Q=CV}
-$$
-
-De:
-
-$$
-I=\frac{dQ}{dt}
-$$
-
-sale:
-
-$$
-\boxed{I=C\frac{dV}{dt}}
-$$
-
-Unidad:
-
-$$
-[C]=F
-$$
-
-En electrónica digital son comunes:
-
-$$
-pF,\quad nF,\quad \mu F
-$$
-
-## Intuición
-
-Un capacitor se opone a cambios rápidos de **voltaje**.
-
-$$
-\boxed{\text{El voltaje de un capacitor no puede cambiar instantáneamente}}
-$$
-
-Para cambiar muy rápido $V$:
-
-$$
-\frac{dV}{dt}\uparrow
-$$
-
-se necesita mucha corriente:
-
-$$
-I=C\frac{dV}{dt}
-$$
-
-### Imagen mental
-
-$$
-\boxed{\text{Capacitor} \approx \text{inercia del voltaje}}
-$$
-
-No es una equivalencia física literal, pero es una buena intuición.
-
----
-
-# 3. Energía almacenada en un capacitor
-
-$$
-\boxed{E_C=\frac{1}{2}CV^2}
-$$
-
-La energía está almacenada en el campo eléctrico.
-
----
-
-# 4. Capacitancia parásita
-
-No hace falta colocar físicamente un capacitor para tener capacitancia.
-
-Cualquier par de conductores separados por un dieléctrico tiene cierta capacitancia.
-
-Ejemplos:
-
-- pistas de PCB;
-- cables;
-- patas de componentes;
-- entradas de un MCU;
-- entradas de sensores;
-- breadboard;
-- conectores.
-
-Por eso una línea real puede verse aproximadamente como:
-
-```text
-signal -------------------------
-          |      |      |
-          C      C      C
-          |      |      |
-         GND    GND    GND
-```
-
-Podemos agruparlas:
-
-$$
-\boxed{
-C_{\text{bus}}
-=
-C_1+C_2+C_3+\cdots
-}
-$$
-
-## Intuición
-
-Más dispositivos + más cable + más PCB:
-
-$$
-\boxed{C_{\text{bus}}\uparrow}
-$$
-
-y por lo tanto cuesta más cambiar rápidamente el voltaje de la línea.
-
----
-
-# 5. Pull-up
-
-Una resistencia pull-up conecta débilmente una señal con $V_{CC}$.
-
-```text
-VCC
- |
- Rpullup
- |
- +------ señal
-```
-
-Si nadie fuerza la línea:
-
-$$
-V_{\text{signal}}\approx V_{CC}
-$$
-
-por lo tanto tenemos un `1` lógico.
-
-## Intuición
-
-El pull-up:
-
-> lleva la línea hacia `1` cuando nadie está controlándola activamente.
-
-No es una fuente ideal de tensión: hay una resistencia en el medio.
-
----
-
-# 6. ¿Por qué usar una resistencia?
-
-Si conectáramos directamente:
-
-```text
-VCC
- |
- +------ signal
- |
- transistor
- |
-GND
-```
-
-cuando el transistor conduce tendríamos prácticamente un cortocircuito.
-
-Con una resistencia:
-
-```text
-VCC
- |
- R
- |
- +------ signal
- |
- transistor
- |
-GND
-```
-
-la corriente queda limitada:
-
-$$
-\boxed{I=\frac{V_{CC}}{R}}
-$$
-
-Por ejemplo:
-
-$$
-V_{CC}=3.3V
-$$
-
-$$
-R=4.7\,k\Omega
-$$
-
-entonces:
-
-$$
-I\approx0.70\,mA
-$$
-
----
-
-# 7. Push-pull
-
-Una salida GPIO convencional suele poder conducir activamente la salida tanto hacia $V_{CC}$ como hacia GND.
-
-Conceptualmente:
-
-```text
-       VCC
-        |
-    transistor
-        |
-GPIO ---+
-        |
-    transistor
-        |
-       GND
-```
-
-Puede producir activamente:
-
-$$
-0
-$$
-
-o:
-
-$$
-1
-$$
-
-Esto se conoce como:
-
-$$
-\boxed{\text{push-pull}}
-$$
-
----
-
-# 8. Open-drain
-
-Una salida open-drain solamente tiene capacidad activa de llevar la línea hacia GND.
-
-Conceptualmente:
-
-```text
-GPIO ----+
-         |
-     transistor
-         |
-        GND
-```
-
-Tiene dos estados.
-
-### Transistor ON
-
-$$
-V_{\text{GPIO}}\approx0
-$$
-
-Produce un `0`.
-
-### Transistor OFF
-
-La salida queda desconectada eléctricamente.
-
-Eso se llama:
-
-$$
-\boxed{\text{alta impedancia / Hi-Z}}
-$$
-
-No produce activamente un `1`.
-
----
-
-# 9. Open-drain + pull-up
-
-Al combinar ambos:
-
-```text
-        VCC
-         |
-      Rpullup
-         |
-         +--------- SDA
-         |
-      transistor
-         |
-        GND
-```
-
-tenemos:
-
-### Transistor ON
-
-$$
-SDA=0
-$$
-
-### Transistor OFF
-
-El pull-up lleva la línea a:
-
-$$
-SDA\approx V_{CC}
-$$
-
-Por lo tanto:
-
-$$
-\boxed{
-\text{open-drain}
-=
-\text{forzar 0 o soltar la línea}
-}
-$$
-
----
-
-# 10. ¿Por qué I²C usa open-drain?
-
-Porque varios dispositivos comparten SDA y SCL.
-
-```text
-                VCC
-                 |
-               Rpullup
-                 |
-SDA -------------+----------------
-        |             |           |
-       MCU          sensor       sensor
-        |             |           |
-       SW            SW          SW
-        |             |           |
-       GND           GND         GND
-```
-
-Todos pueden tirar la línea hacia cero.
-
-Ninguno intenta imponer activamente un `1`.
-
-Por eso no existe el conflicto:
-
-```text
-dispositivo A -> fuerza HIGH
-dispositivo B -> fuerza LOW
-```
-
-que con push-pull podría provocar una corriente muy grande.
-
-### Regla conceptual de I²C
-
-$$
-\boxed{
-0 = \text{alguien está tirando la línea a GND}
-}
-$$
-
-$$
-\boxed{
-1 = \text{nadie está tirando la línea a GND}
-}
-$$
-
----
-
-# 11. Pull-up + capacitancia = circuito RC
-
-Una línea I²C real se parece aproximadamente a:
-
-```text
-            VCC
-             |
-           Rpullup
-             |
-             +------ SDA
-             |
-            Cbus
-             |
-            GND
-```
-
-Esto es un circuito RC.
-
-Su constante de tiempo es:
-
-$$
-\boxed{\tau=RC}
-$$
-
----
-
-# 12. Carga del capacitor
-
-Si inicialmente:
-
-$$
-V(0)=0
-$$
-
-y soltamos la línea, el pull-up carga la capacitancia:
-
-$$
-\boxed{
-V(t)=V_{CC}
-\left(
-1-e^{-t/RC}
-\right)
-}
-$$
-
-Valores útiles:
-
-$$
-t=\tau \Rightarrow V\approx0.63V_{CC}
-$$
-
-$$
-t=3\tau \Rightarrow V\approx0.95V_{CC}
-$$
-
-$$
-t=5\tau \Rightarrow V\approx0.99V_{CC}
-$$
-
----
-
-# 13. Rise time
-
-Una señal digital real no hace:
-
-```text
-      ┌────────
-      │
-──────┘
-```
-
-sino aproximadamente:
-
-```text
-          _______
-       .´
-     .´
-   .´
-_.´
-```
-
-El tiempo que tarda en subir se llama:
-
-$$
-\boxed{t_r=\text{rise time}}
-$$
-
-Para un circuito RC:
-
-$$
-\boxed{t_r\propto RC}
-$$
-
-Por lo tanto:
-
-$$
-R\uparrow \Rightarrow t_r\uparrow
-$$
-
-$$
-C\uparrow \Rightarrow t_r\uparrow
-$$
-
----
-
-# 14. Capacitancia del bus y velocidad
-
-Si aumentamos:
-
-$$
-C_{\text{bus}}
-$$
-
-la línea tarda más en alcanzar un `1` lógico.
-
-Por eso:
-
-$$
-\boxed{
-C_{\text{bus}}\uparrow
-\Rightarrow
-t_{\text{rise}}\uparrow
-\Rightarrow
-f_{\max}\downarrow
-}
-$$
-
-La capacitancia limita principalmente la **velocidad máxima** del bus.
-
----
-
-# 15. Elegir el pull-up es un compromiso
-
-Resistencia grande:
-
-$$
-R\uparrow
-$$
-
-produce:
-
-$$
-I\downarrow
-$$
-
-pero:
-
-$$
-RC\uparrow
-$$
-
-por lo que la subida es más lenta.
-
-Resistencia pequeña:
-
-$$
-R\downarrow
-$$
-
-produce subida más rápida, pero cuando la línea está LOW:
-
-$$
-I=\frac{V_{CC}}{R}
-$$
-
-aumenta.
-
-Por lo tanto:
-
-$$
-\boxed{
-R_{\text{pullup}}\text{ grande}
-\Rightarrow
-\text{menos corriente, subida lenta}
-}
-$$
-
-$$
-\boxed{
-R_{\text{pullup}}\text{ pequeña}
-\Rightarrow
-\text{más corriente, subida rápida}
-}
-$$
-
----
-
-# 16. Inductancia
-
-Un conductor por el que circula corriente genera un campo magnético.
-
-Una inductancia almacena energía en ese campo magnético.
-
-La relación fundamental es:
-
-$$
-\boxed{
-V=L\frac{dI}{dt}
-}
-$$
-
-Unidad:
-
-$$
-[L]=H
-$$
-
----
-
-# 17. Intuición de la inductancia
-
-Una inductancia se opone a cambios rápidos de **corriente**.
-
-$$
-\boxed{
-\text{La corriente de un inductor no puede cambiar instantáneamente}
-}
-$$
-
-Para cambiar muy rápido la corriente:
-
-$$
-\frac{dI}{dt}\uparrow
-$$
-
-hace falta una tensión grande:
-
-$$
-V=L\frac{dI}{dt}
-$$
-
-### Imagen mental
-
-$$
-\boxed{
-\text{Inductor}\approx\text{inercia de la corriente}
-}
-$$
-
----
-
-# 18. Energía almacenada en una inductancia
-
-$$
-\boxed{
-E_L=\frac12LI^2
-}
-$$
-
-La energía está almacenada en el campo magnético.
-
----
-
-# 19. Capacitor vs inductor
-
-| | Capacitor | Inductor |
+| Efecto | Causa | Sección |
 |---|---|---|
-| Campo | eléctrico | magnético |
-| Almacena según | voltaje | corriente |
-| Ecuación | $I=C\,dV/dt$ | $V=L\,dI/dt$ |
-| No permite cambiar instantáneamente | $V$ | $I$ |
-| Energía | $\frac12CV^2$ | $\frac12LI^2$ |
-| Intuición | inercia del voltaje | inercia de la corriente |
+| La subida lenta de I²C | pull-up cargando la capacidad del bus | 4 |
+| Oscilaciones y picos en flancos rápidos | L y C parásitas | 5 |
+| Capacitores de desacople | L de la alimentación | 6 |
+| Lo que el instrumento muestra (y lo que agrega) | muestreo, umbral, carga de la punta | 7 |
+
+> Una señal es digital desde el punto de vista de la información; físicamente es un circuito analógico. Digital rápido ⇒ problemas analógicos.
 
 ---
 
-# 20. Inductancia parásita
+## 1. R, C y L
 
-Todo conductor real tiene inductancia.
+| | Resistencia | Capacitor | Inductor |
+|---|---|---|---|
+| Relación | $V = RI$ | $I = C\,dV/dt$ (de $Q = CV$ e $I = dQ/dt$) | $V = L\,dI/dt$ |
+| Qué no puede saltar | — | la tensión | la corriente |
+| Energía | disipa: $P = I^2R = V^2/R$ | almacena $\tfrac12 CV^2$ (campo eléctrico) | almacena $\tfrac12 LI^2$ (campo magnético) |
+| Impedancia | $Z_R = R$ | $Z_C = 1/(j\omega C)$ | $Z_L = j\omega L$ |
+| Con la frecuencia | constante | $\lvert Z_C\rvert$ baja: camino fácil para lo rápido | $\lvert Z_L\rvert$ sube: frena lo rápido |
+| Imagen mental | fricción | inercia de la tensión | inercia de la corriente |
+| Escalas típicas acá | Ω–kΩ | pF (pines, cables), nF (desacople) | nH (cables, pistas) |
 
-Por ejemplo un cable:
+Consecuencias que se usan después:
+
+- Cambiar rápido la tensión de una capacidad exige mucha corriente; cambiar rápido una corriente a través de una inductancia exige mucha tensión.
+- Constantes de tiempo: $\tau = RC$ y $\tau = L/R$.
+- RLC serie: frecuencia natural $f_0 = 1/(2\pi\sqrt{LC})$; oscila (subamortiguado) si $R < 2\sqrt{L/C}$. C y L intercambian energía; R la disipa.
+
+---
+
+## 2. Parásitos: R, L y C que nadie puso
+
+Todo conductor real tiene R, L y C, aunque no haya componentes con esos nombres.
+
+**Capacidad parásita.** Aparece entre cualquier par de conductores separados por un dieléctrico:
+- entradas de los chips (UM10204 admite hasta 10 pF por pin de I/O);
+- cables, pistas, contactos contiguos de la protoboard, conectores;
+- la punta o el canal del instrumento que conectás para medir.
+
+En un bus, todas quedan en paralelo contra masa y se suman: $C_b = \sum C_i$. Más dispositivos, más cable, más instrumento ⇒ $C_b$ mayor.
+
+**Inductancia parásita.** Aparece en cables, pistas, vías, patas y conectores. Lo que importa no es el conductor aislado sino el **lazo** que recorre la corriente: ida por la señal, vuelta por masa. Cuanto más área encierra el lazo, más L. Por eso importa que la masa vaya cerca de la señal (y por eso el cable de masa de una punta es un problema, sección 7).
+
+**Modelo de una interconexión real:**
 
 ```text
-MCU ---------------- sensor
+            L        R
+señal ---^^^^^^---/\/\/\---+--- entrada
+                           |
+                           C
+                           |
+                          GND
 ```
 
-puede modelarse mejor como:
+Este modelo "concentrado" vale mientras el cable sea corto frente al flanco (sección 5.4).
+
+---
+
+## 3. Estados de un pin
+
+| Modo | ¿Fuerza 0? | ¿Fuerza 1? | Uso típico |
+|---|---|---|---|
+| Push-pull | sí | sí | GPIO de salida, SPI, TX de UART |
+| Open-drain | sí | no: queda en Hi-Z | I²C, líneas compartidas |
+| Entrada (Hi-Z) | no | no | lectura |
 
 ```text
-MCU ---- L ---- R ---- sensor
+push-pull:                    open-drain:
+      VCC
+       |
+  transistor                  pin ----+
+       |                              |
+pin ---+                         transistor
+       |                              |
+  transistor                         GND
+       |
+      GND
 ```
 
-Hay inductancia en:
-
-- cables;
-- pistas;
-- vias;
-- conectores;
-- patas de componentes;
-- planos de alimentación.
-
-Por eso existe:
-
-$$
-\boxed{L_{\text{parásita}}}
-$$
-
-aunque nunca hayamos colocado una bobina.
+- **Alta impedancia (Hi-Z).** El pin no entrega ni absorbe corriente apreciable. No es 0 ni 1: es "estoy desconectado de esta línea".
+- **Entrada flotante.** Una entrada CMOS es básicamente la capacidad de una compuerta. Sin nada que fije su tensión, se carga por fugas y acoplamiento, y lee 0 o 1 al azar. Si queda en una tensión intermedia, los dos transistores de la etapa de entrada conducen a medias y consume de más.
+- **Pull-up / pull-down.** Una resistencia a VCC o a GND que fija el estado por defecto. Es "débil": cualquier salida activa le gana.
+- **Por qué resistencia y no un cable a VCC.** Cuando un transistor tira la línea a 0, la corriente queda limitada a $I = (V_{CC} - V_{OL})/R \approx V_{CC}/R$. Con 3,3 V y 4,7 kΩ, ≈ 0,7 mA. Con un cable, sería un cortocircuito.
+- **Push-pull en una línea compartida.** Si un dispositivo fuerza 1 y otro fuerza 0, la corriente solo la limitan las resistencias internas de los transistores (contención). Por eso los buses compartidos usan open-drain.
 
 ---
 
-# 21. ¿Por qué importa en electrónica digital?
+## 4. I²C eléctrico
 
-Porque:
-
-$$
-\boxed{V=L\frac{dI}{dt}}
-$$
-
-Un MCU puede cambiar corrientes extremadamente rápido.
-
-Aunque $L$ sea pequeña, si:
-
-$$
-\frac{dI}{dt}
-$$
-
-es grande, aparece una tensión apreciable.
-
-Ejemplo:
-
-$$
-L=20\,nH
-$$
-
-$$
-\Delta I=20\,mA
-$$
-
-$$
-\Delta t=10\,ns
-$$
-
-Entonces:
-
-$$
-V\approx L\frac{\Delta I}{\Delta t}
-$$
-
-$$
-V
-=
-20\times10^{-9}
-\frac{20\times10^{-3}}
-{10\times10^{-9}}
-$$
-
-$$
-\boxed{V\approx40\,mV}
-$$
-
----
-
-# 22. Lo importante no es sólo la frecuencia
-
-Una señal puede ser de solamente:
-
-$$
-1\,kHz
-$$
-
-pero el GPIO puede cambiar de LOW a HIGH en:
-
-$$
-5\,ns
-$$
-
-El circuito tiene que responder al flanco de 5 ns.
-
-Por eso:
-
-$$
-\boxed{
-\text{frecuencia de señal}
-\neq
-\text{velocidad del flanco}
-}
-$$
-
-Y en integridad de señal muchas veces importa más:
-
-$$
-\boxed{t_r,\;t_f}
-$$
-
-que la frecuencia fundamental.
-
----
-
-# 23. Capacitancia + inductancia
-
-Todo circuito real tiene:
-
-$$
-R,\qquad L,\qquad C
-$$
-
-aunque no hayamos colocado explícitamente esos componentes.
-
-Una interconexión real se parece más a:
+### 4.1 Open-drain + pull-up = "wired-AND"
 
 ```text
-            L       R
-signal ----^^^^----/\/\-------
-                         |
-                         C
-                         |
-                        GND
+               3,3 V
+                 |
+             R_pull-up
+                 |
+SDA -------------+-----------------+-----------------
+                 |                 |                 |
+               ESP32              IMU            otro disp.
+                 |                 |                 |
+             transistor        transistor        transistor
+                 |                 |                 |
+                GND               GND               GND
 ```
 
-que a un cable matemáticamente ideal.
+- **0** = al menos un dispositivo tira la línea a GND.
+- **1** = nadie la tira; la pull-up la lleva a VCC.
+- Nadie genera un 1 activamente. SCL funciona igual.
 
----
+Dos razones para que sea open-drain:
 
-# 24. Circuito LC y resonancia
+1. **No hay contención:** en el peor caso la línea queda en 0; nunca hay un cortocircuito entre dispositivos.
+2. **Cualquiera puede tomar una línea que maneja otro:** el esclavo contesta sobre SDA (ACK y datos), un esclavo lento estira SCL (*clock stretching*) y, con varios masters, se arbitra: el que suelta la línea (quiere un 1) y lee 0 sabe que perdió.
 
-Una inductancia y una capacitancia pueden intercambiar energía.
+### 4.2 Dónde está la pull-up
 
-La frecuencia natural ideal es:
+Puede estar en el ESP32 (internas, ≈ 45 kΩ según su hoja de datos, se activan por software), en el módulo del sensor o como resistencia externa. **Todas las que estén conectadas quedan en paralelo:**
 
-$$
-\boxed{
-f_0=
-\frac{1}
-{2\pi\sqrt{LC}}
-}
-$$
+$$\frac{1}{R_{eq}} = \sum_i \frac{1}{R_i}$$
 
-La energía oscila entre:
+- Módulo con 4,7 kΩ + internas del ESP32 activadas → ≈ 4,3 kΩ.
+- Dos módulos con 4,7 kΩ cada uno (IMU + adaptador del LCD en la fase 5) → 2,35 kΩ.
 
-$$
-E_C=\frac12CV^2
-$$
+Qué pull-ups hay en tu bus se averigua (capa 0 de 1.1); no se supone.
 
-y:
+### 4.3 Niveles lógicos
 
-$$
-E_L=\frac12LI^2
-$$
+UM10204 define los umbrales en proporción a la alimentación (tabla de características de SDA y SCL):
 
----
+| | Valor |
+|---|---|
+| $V_{IL}$ (máximo que se lee como 0) | $0{,}3\,V_{DD}$ |
+| $V_{IH}$ (mínimo que se lee como 1) | $0{,}7\,V_{DD}$ |
+| $V_{OL}$ (0 que tiene que garantizar quien tira a masa) | ≤ 0,4 V absorbiendo 3 mA |
 
-# 25. Ringing
+Entre $V_{IL}$ y $V_{IH}$ el nivel no está definido. Esto importa en 4.4: el tiempo de subida se mide justamente entre esos dos umbrales.
 
-Un flanco rápido puede excitar las $L$ y $C$ parásitas.
+### 4.4 El flanco de subida es la carga de un RC
 
-En vez de:
+Cuando todos sueltan la línea, la pull-up carga $C_b$:
 
 ```text
-      ┌────────────
-      │
-──────┘
+   VDD
+    |
+    R  (pull-up equivalente)
+    |
+    +------ SDA
+    |
+   C_b
+    |
+   GND
 ```
 
-podemos observar:
+$$V(t) = V_{DD}\left(1 - e^{-t/RC}\right) \qquad\Longrightarrow\qquad t(x) = -RC\,\ln(1-x)$$
+
+donde $x$ es la fracción de $V_{DD}$ alcanzada. Valores útiles: 63 % en $\tau$, 95 % en $3\tau$, 99 % en $5\tau$.
+
+**Tiempo de subida.** Depende de entre qué fracciones se mida:
+
+| Definición | Resultado | Dónde se usa |
+|---|---|---|
+| 10 % → 90 % | $RC\ln 9 \approx 2{,}2\,RC$ | definición genérica (osciloscopios, hojas de datos) |
+| 30 % → 70 % | $RC\ln(0{,}7/0{,}3) \approx 0{,}8473\,RC$ | I²C: son sus umbrales $V_{IL}$ y $V_{IH}$ |
+
+**Límites de UM10204:** $t_r \le 1000$ ns en modo estándar (100 kHz), $t_r \le 300$ ns en modo rápido (400 kHz); $C_b \le 400$ pF en ambos.
+
+Con $C_b = 100$ pF:
+
+| Pull-up | $t_r$ (30–70 %) | 100 kHz | 400 kHz |
+|---|---|---|---|
+| Interna ESP32, ≈ 45 kΩ | ≈ 3,8 µs | no | no |
+| 10 kΩ | ≈ 850 ns | sí | no |
+| 4,7 kΩ | ≈ 400 ns | sí | no |
+| 2,2 kΩ | ≈ 190 ns | sí | sí |
+
+### 4.5 Elegir la pull-up: dos límites
+
+- **Máximo, por velocidad:** $R_{max} = t_{r,max} / (0{,}8473\,C_b)$. Con 100 pF: ≈ 11,8 kΩ a 100 kHz, ≈ 3,5 kΩ a 400 kHz. Depende de $C_b$.
+- **Mínimo, por corriente:** quien tira a 0 tiene que absorber la corriente de la pull-up y seguir garantizando $V_{OL}$: $R_{min} = (V_{DD} - V_{OL,max}) / I_{OL} = (3{,}3 - 0{,}4)\,\text{V} / 3\,\text{mA} \approx 970\ \Omega$. Depende de $V_{DD}$.
+
+| | R grande | R chica |
+|---|---|---|
+| Subida | lenta | rápida |
+| Corriente con la línea en 0 | baja | alta |
+| Inmunidad al ruido | peor (línea "débil") | mejor |
+
+Procedimiento completo: UM10204, §7.1 "Pull-up resistor sizing"; TI SLVA689.
+
+### 4.6 Asimetría subida/bajada
+
+- **Bajada:** un transistor descarga $C_b$ activamente → rápida (del orden de ns).
+- **Subida:** la pull-up carga $C_b$ → exponencial, lenta.
+
+En el osciloscopio, I²C se ve como flancos de bajada abruptos y subidas redondeadas. La que limita la velocidad del bus es la subida:
+
+$$C_b \uparrow \;\Rightarrow\; t_r \uparrow \;\Rightarrow\; f_{max} \downarrow$$
+
+---
+
+## 5. Flancos rápidos
+
+### 5.1 Importa el flanco, no la frecuencia
+
+Una señal de 1 kHz cuyo GPIO conmuta en 5 ns tiene contenido espectral hasta aproximadamente
+
+$$f \approx \frac{0{,}35}{t_r} \quad (t_r \text{ de } 10\text{–}90\,\%) \;\;\Rightarrow\;\; 5\ \text{ns} \to 70\ \text{MHz}$$
+
+El circuito responde al flanco de 5 ns, no a la fundamental de 1 kHz. En integridad de señal importan $t_r$ y $t_f$.
+
+### 5.2 Inductancia parásita: $V = L\,dI/dt$
+
+Aunque L sea chica, una $dI/dt$ grande produce una tensión apreciable. Ejemplo: $L = 20$ nH, $\Delta I = 20$ mA en $\Delta t = 10$ ns:
+
+$$V \approx L\,\frac{\Delta I}{\Delta t} = 20\ \text{nH}\cdot\frac{20\ \text{mA}}{10\ \text{ns}} = 40\ \text{mV}$$
+
+**Ground bounce:** si varias salidas conmutan juntas y devuelven su corriente por la misma pata de masa, las $dI/dt$ se suman y la masa interna del chip se mueve respecto de la de la placa.
+
+### 5.3 Ringing, overshoot y undershoot
+
+Un flanco rápido excita las L y C parásitas, que intercambian energía; la R del camino la disipa.
 
 ```text
-       /\_/\/\______
-      /
-_____/
+ideal:              real:
+     ┌──────             /\  /\
+     │                  /  \/  \/‾‾‾‾‾   ← overshoot + ringing
+─────┘              ___/
 ```
 
-Esto se llama:
+- Oscila si el camino está subamortiguado: $R < 2\sqrt{L/C}$. Ejemplo ilustrativo: $L = 100$ nH y $C = 100$ pF dan $f_0 \approx 50$ MHz y $2\sqrt{L/C} \approx 63\ \Omega$. Una salida de pocas decenas de ohms con ese cable oscila.
+- **Overshoot** ($V > V_{DD}$) y **undershoot** ($V < 0$): los pines tienen límites (sección *Absolute Maximum Ratings* de cada hoja de datos). Fuera de ellos conducen los diodos de protección internos.
+- En I²C, el flanco que puede oscilar es la **bajada** (rápida), no la subida RC. UM10204 fija un $t_f$ mínimo en modo rápido para limitar este efecto.
+- En SPI (MAX31865, fase 4) las salidas son push-pull: los dos flancos son rápidos.
 
-$$
-\boxed{\text{ringing}}
-$$
+### 5.4 Cuándo un cable deja de ser "un nodo"
 
-Es una oscilación transitoria causada por la energía almacenada en las inductancias y capacitancias del circuito.
+La señal se propaga a velocidad finita: $v \approx c/\sqrt{\varepsilon_{ef}}$, del orden de 15–20 cm/ns en cables y pistas. El modelo concentrado (sección 2) vale mientras el tiempo de propagación sea chico frente al flanco. Regla práctica: $t_{prop} \lesssim t_r/6$ (según la fuente, entre 1/4 y 1/10). Longitud crítica:
 
-La resistencia normalmente amortigua la oscilación.
+$$\ell_{crit} \approx \frac{v\,t_r}{6}$$
+
+| Flanco | $t_r$ | $\ell_{crit}$ |
+|---|---|---|
+| Subida I²C | ~300 ns | decenas de metros: irrelevante |
+| Bajada I²C, flancos de SPI | ~10 ns | del orden de 30 cm |
+
+Por encima de $\ell_{crit}$ el cable es una **línea de transmisión**: importan su impedancia característica, las reflexiones y la terminación (la terminación de 120 Ω de CAN en la fase 7 es exactamente esto). Consecuencia práctica: un cable dupont largo ya está en zona gris para los flancos rápidos.
 
 ---
 
-# 26. Overshoot y undershoot
+## 6. Alimentación: capacitores de desacople
 
-Debido a las inductancias y capacitancias parásitas, una señal puede superar momentáneamente sus valores nominales.
-
-### Overshoot
-
-$$
-V>V_{CC}
-$$
-
-### Undershoot
-
-$$
-V<0
-$$
-
-Ejemplo:
+Cada conmutación del chip pide un pulso de corriente de pocos ns. La fuente está lejos y entre medio hay inductancia de cables y pistas: $V = L\,dI/dt$ hace caer la tensión en el pin justo cuando el chip la necesita.
 
 ```text
-          /\
-3.3 V ---/  \______
-       /
-______/
+fuente ---- L (cables, pistas) ----+------ VDD del chip
+                                   |
+                                 === 100 nF, pegado al pin
+                                   |
+                                  GND
 ```
 
-Eso puede ser relevante porque los pines de los MCUs tienen límites máximos y mínimos de tensión.
+- El capacitor de desacople (típicamente 100 nF por pin de alimentación) es una **reserva local** para transitorios rápidos.
+- **Tiene que estar cerca** porque lo que importa es el área del lazo capacitor–pin–masa: cuanto menor, menos L entre la reserva y el chip.
+- Se complementa con uno de mayor valor (µF) para transitorios más lentos. El capacitor real también tiene inductancia propia (ESL), por eso se combinan valores.
+- Tus módulos (ESP32, IMU) ya los traen. Sirve para leer sus esquemáticos y para reconocer ruido de alimentación en una medición.
 
 ---
 
-# 27. RC, RL y RLC
+## 7. Qué ve cada instrumento (y qué le hace al circuito)
 
-## RC
+**Analizador lógico.** Compara la tensión con un umbral y muestrea: solo ve 0 o 1 en instantes discretos.
+- A 24 MHz, una muestra cada 41,7 ns. Un pulso más corto puede perderse; un flanco se ubica con esa granularidad.
+- No ve $t_r$, ringing ni niveles de tensión.
+- Con una subida lenta, el instante en que "ve" el flanco depende de su umbral. En un flanco RC con $\tau = 4{,}5$ µs (pull-up interna, 100 pF), pasar del 30 % al 50 % de $V_{DD}$ son ≈ 1,5 µs. El umbral de tu analizador es un dato a averiguar, no a suponer.
 
-Constante de tiempo:
+**Osciloscopio.** Ve la forma analógica: $t_r$, $t_f$, ringing, niveles.
+- Su propio tiempo de subida es ≈ $0{,}35/\text{BW}$. Para medir un $t_r$ hace falta que el del instrumento sea varias veces menor.
 
-$$
-\boxed{\tau=RC}
-$$
-
-Asociado principalmente con cambios de voltaje.
-
-## RL
-
-Constante de tiempo:
-
-$$
-\boxed{\tau=\frac{L}{R}}
-$$
-
-Asociado principalmente con cambios de corriente.
-
-## RLC
-
-Combina:
-
-- almacenamiento eléctrico $C$;
-- almacenamiento magnético $L$;
-- disipación $R$.
-
-Puede producir oscilaciones amortiguadas.
+**Los dos cargan el circuito.**
+- La punta o el canal suman capacidad al bus (una punta ×10 típica, del orden de 10 pF; ver su especificación). Medís el bus con el instrumento conectado.
+- Un cable de masa largo en la punta forma un lazo con L: el ringing que aparece puede ser de la medición, no del circuito.
 
 ---
 
-# 28. Otra intuición útil: R, C y L
+## 8. Level shifter
 
-### Resistencia
+Cuando dos partes del bus tienen distinta alimentación (por ejemplo, ESP32 a 3,3 V y un módulo a 5 V), la pull-up del lado de 5 V pondría 5 V en un pin de 3,3 V. Si eso supera sus *Absolute Maximum Ratings* (verificarlo en la hoja de datos del ESP32), hay que separar los dominios.
 
-$$
-\boxed{R:\text{ disipa energía}}
-$$
-
-### Capacitor
-
-$$
-\boxed{C:\text{ almacena energía eléctrica}}
-$$
-
-### Inductor
-
-$$
-\boxed{L:\text{ almacena energía magnética}}
-$$
-
-El capacitor y el inductor pueden devolver la energía almacenada.
-
-La resistencia no: la transforma fundamentalmente en calor.
+El level shifter bidireccional típico para I²C usa un MOSFET por línea y una pull-up de cada lado, a su propia tensión (NXP AN10441). Funciona justamente porque el bus es open-drain: nadie empuja un 1, cada lado lo pone con su propia pull-up. Es relevante en la fase 5 (LCD).
 
 ---
 
-# 29. Corriente y carga
+## 9. Resumen
 
-Relación fundamental:
-
-$$
-\boxed{
-I=\frac{dQ}{dt}
-}
-$$
-
-La corriente es simplemente:
-
-> cantidad de carga que atraviesa una sección por unidad de tiempo.
-
-Integrando:
-
-$$
-\boxed{
-Q=\int I\,dt
-}
-$$
-
-Esto hace especialmente intuitiva la ecuación del capacitor:
-
-$$
-Q=CV
-$$
-
-porque:
-
-$$
-I=C\frac{dV}{dt}
-$$
+| Idea | Ecuación |
+|---|---|
+| Para cambiar la tensión de una capacidad hay que mover carga | $Q = CV$ |
+| Moverla rápido requiere corriente | $I = dQ/dt = C\,dV/dt$ |
+| Cambiar rápido una corriente requiere tensión | $V = L\,dI/dt$ |
+| La subida de I²C es un RC y limita la velocidad | $t_r = 0{,}8473\,RC$; $C_b\uparrow \Rightarrow f_{max}\downarrow$ |
+| La pull-up está acotada por los dos lados | $\dfrac{V_{DD}-V_{OL}}{I_{OL}} \le R \le \dfrac{t_{r,max}}{0{,}8473\,C_b}$ |
+| L y C parásitas oscilan con flancos rápidos | $f_0 = 1/(2\pi\sqrt{LC})$, subamortiguado si $R < 2\sqrt{L/C}$ |
+| El flanco, no la frecuencia, fija el ancho de banda | $f \approx 0{,}35/t_r$ |
 
 ---
 
-# 30. Alta impedancia
+## 10. Preguntas de repaso (sin mirar)
 
-Una entrada o salida en alta impedancia:
-
-$$
-\boxed{Z\rightarrow\text{muy grande}}
-$$
-
-idealmente no entrega ni absorbe corriente significativa.
-
-No significa necesariamente `0`.
-
-No significa necesariamente `1`.
-
-Significa aproximadamente:
-
-> estoy eléctricamente desconectado de esta línea.
-
-Por eso un pin flotante puede tomar valores impredecibles.
+1. ¿Por qué la subida de I²C es exponencial y la bajada no?
+2. ¿Por qué en I²C el $t_r$ se mide entre 30 % y 70 %, y de dónde sale el 0,8473?
+3. ¿Qué dos límites acotan la pull-up y de qué parámetro depende cada uno?
+4. Si agregás el LCD al bus de la IMU, ¿qué pasa con $R_{eq}$, con $C_b$ y con $t_r$?
+5. ¿Una señal de 1 kHz puede tener problemas de integridad de señal? ¿Por qué?
+6. ¿Qué puede y qué no puede mostrarte el analizador lógico de un flanco de SDA?
+7. ¿Por qué el capacitor de desacople tiene que estar cerca del pin, si la tensión es la misma en todo el cable?
 
 ---
 
-# 31. Floating input
-
-Una entrada sin conexión definida:
-
-```text
-GPIO input ---- nada
-```
-
-está:
-
-$$
-\boxed{\text{floating}}
-$$
-
-Puede captar ruido electromagnético y terminar siendo interpretada alternativamente como `0` o `1`.
-
-Se soluciona normalmente con:
-
-- pull-up;
-- pull-down;
-- una fuente que controle activamente la señal.
-
----
-
-# 32. Pull-down
-
-Es el equivalente inverso del pull-up:
-
-```text
-signal
- |
- R
- |
-GND
-```
-
-Si nadie controla la señal:
-
-$$
-V\approx0
-$$
-
-Por lo tanto establece un estado lógico por defecto LOW.
-
----
-
-# 33. Rise time y fall time
-
-Se definen:
-
-$$
-t_r = \text{tiempo de subida}
-$$
-
-$$
-t_f = \text{tiempo de bajada}
-$$
-
-En I²C pueden ser bastante diferentes.
-
-Con open-drain:
-
-### HIGH → LOW
-
-El transistor descarga activamente:
-
-$$
-\boxed{\text{bajada rápida}}
-$$
-
-### LOW → HIGH
-
-El pull-up carga $C_{\text{bus}}$:
-
-$$
-\boxed{\text{subida RC más lenta}}
-$$
-
-Esta asimetría es característica de I²C.
-
----
-
-# 34. Idea importante sobre cables
-
-A baja velocidad podemos imaginar:
-
-```text
-entrada ---------------- salida
-```
-
-como si todo el cable tuviera instantáneamente el mismo voltaje.
-
-Pero físicamente las señales electromagnéticas se propagan a velocidad finita.
-
-Cuando el tiempo de propagación del cable deja de ser despreciable frente al rise time:
-
-$$
-t_{\text{prop}}
-\sim
-t_r
-$$
-
-el cable empieza a comportarse como una:
-
-$$
-\boxed{\text{línea de transmisión}}
-$$
-
-y ya no alcanza con pensar solamente en $R$, $L$ y $C$ concentrados en un punto.
-
----
-
-# 35. Impedancia
-
-En continua usamos principalmente resistencia:
-
-$$
-V=RI
-$$
-
-Pero cuando las señales cambian con el tiempo, capacitores e inductores también afectan la relación entre tensión y corriente.
-
-Se usa entonces el concepto:
-
-$$
-\boxed{
-Z=\text{impedancia}
-}
-$$
-
-Para una resistencia:
-
-$$
-\boxed{Z_R=R}
-$$
-
-Para un capacitor:
-
-$$
-\boxed{
-Z_C=\frac{1}{j\omega C}
-}
-$$
-
-Para un inductor:
-
-$$
-\boxed{
-Z_L=j\omega L
-}
-$$
-
----
-
-# 36. Intuición frecuencial
-
-Para un capacitor:
-
-$$
-|Z_C|=\frac{1}{\omega C}
-$$
-
-entonces:
-
-$$
-f\uparrow
-\Rightarrow
-|Z_C|\downarrow
-$$
-
-### Intuición
-
-El capacitor ofrece un camino cada vez más fácil para componentes de alta frecuencia.
-
-Para un inductor:
-
-$$
-|Z_L|=\omega L
-$$
-
-entonces:
-
-$$
-f\uparrow
-\Rightarrow
-|Z_L|\uparrow
-$$
-
-### Intuición
-
-El inductor dificulta cada vez más las variaciones rápidas de corriente.
-
----
-
-# 37. Por qué aparecen capacitores de desacople
-
-Cerca de un MCU normalmente encontrás capacitores como:
-
-$$
-100\,nF
-$$
-
-entre:
-
-$$
-V_{CC}
-$$
-
-y:
-
-$$
-GND
-$$
-
-Su objetivo es proporcionar localmente corriente durante cambios rápidos.
-
-```text
-VCC ----+------ MCU
-        |
-       === C
-        |
-       GND
-```
-
-Si el MCU necesita un pequeño pulso rápido de corriente, el capacitor cercano puede suministrarlo.
-
-### Intuición
-
-La fuente de alimentación puede estar físicamente lejos.
-
-El capacitor es una pequeña reserva de energía ubicada al lado del chip.
-
-$$
-\boxed{
-\text{decoupling capacitor}
-\approx
-\text{reservorio local para transitorios rápidos}
-}
-$$
-
----
-
-# 38. ¿Por qué tiene que estar cerca del MCU?
-
-Porque las pistas entre la fuente y el MCU tienen inductancia:
-
-$$
-V=L\frac{dI}{dt}
-$$
-
-Una corriente que cambia rápidamente no puede llegar instantáneamente desde una fuente distante sin generar perturbaciones de tensión.
-
-Por eso:
-
-$$
-\boxed{
-\text{capacitor de desacople cerca del pin}
-}
-$$
-
-reduce el área del camino de corriente y la inductancia efectiva.
-
----
-
-# 39. Idea física general
-
-Una señal digital ideal:
-
-```text
-0 → 1
-```
-
-parece puramente lógica.
-
-Pero físicamente significa mover carga:
-
-$$
-Q=CV
-$$
-
-en un intervalo de tiempo:
-
-$$
-I=\frac{dQ}{dt}
-$$
-
-por conductores que tienen inductancia:
-
-$$
-V=L\frac{dI}{dt}
-$$
-
-y resistencia:
-
-$$
-V=RI
-$$
-
-Por lo tanto, detrás de cada transición digital están:
-
-$$
-\boxed{
-R,\quad L,\quad C
-}
-$$
-
----
-
-# 40. Resumen mental
-
-## Resistencia
-
-$$
-\boxed{V=RI}
-$$
-
-**Limita corriente y disipa energía.**
-
-## Capacitor
-
-$$
-\boxed{I=C\frac{dV}{dt}}
-$$
-
-**Se opone a cambios rápidos de voltaje.**
-
-$$
-\boxed{E_C=\frac12CV^2}
-$$
-
-## Inductor
-
-$$
-\boxed{V=L\frac{dI}{dt}}
-$$
-
-**Se opone a cambios rápidos de corriente.**
-
-$$
-\boxed{E_L=\frac12LI^2}
-$$
-
-## RC
-
-$$
-\boxed{\tau=RC}
-$$
-
-**Controla qué tan rápido puede cambiar un voltaje mediante una resistencia.**
-
-## Open-drain
-
-$$
-\boxed{\text{LOW o Hi-Z}}
-$$
-
-No genera HIGH activamente.
-
-## Pull-up
-
-$$
-\boxed{\text{lleva la línea a HIGH cuando nadie la tira a LOW}}
-$$
-
-## I²C
-
-$$
-\boxed{
-\text{open-drain + pull-up + }C_{\text{bus}}
-}
-$$
-
-produce una subida aproximadamente RC.
-
-## Capacitancia parásita
-
-$$
-\boxed{
-C_{\text{bus}}\uparrow
-\Rightarrow
-t_r\uparrow
-\Rightarrow
-f_{\max}\downarrow
-}
-$$
-
-## Inductancia parásita
-
-$$
-\boxed{
-V=L\frac{dI}{dt}
-}
-$$
-
-Cambios rápidos de corriente pueden producir picos de tensión.
-
-## LC
-
-$$
-\boxed{
-f_0=\frac{1}{2\pi\sqrt{LC}}
-}
-$$
-
-Puede producir ringing.
-
----
-
-# 41. Las cuatro intuiciones que conviene recordar
-
-$$
-\boxed{
-Q=CV
-}
-$$
-
-**Para cambiar el voltaje de una capacitancia hay que mover carga.**
-
-$$
-\boxed{
-I=\frac{dQ}{dt}
-}
-$$
-
-**Mover esa carga rápidamente requiere corriente.**
-
-$$
-\boxed{
-V=L\frac{dI}{dt}
-}
-$$
-
-**Cambiar una corriente rápidamente requiere tensión.**
-
-$$
-\boxed{
-\text{digital rápido}
-\Rightarrow
-\text{problemas analógicos}
-}
-$$
-
-Una señal es digital desde el punto de vista de la información.
-
-Desde el punto de vista físico sigue siendo una señal electromagnética gobernada por circuitos analógicos.
+## Fuentes
+
+- NXP UM10204, *I2C-bus specification and user manual*: tabla de características de SDA y SCL ($V_{IL}$, $V_{IH}$, $V_{OL}$, $t_r$, $t_f$, $C_b$, $C_i$); §7.1 "Pull-up resistor sizing".
+- TI SLVA689, *I2C Bus Pullup Resistor Calculation*.
+- NXP AN10441, *Level shifting techniques in I2C-bus design*.
+- Espressif, hoja de datos del ESP32: pull-ups internas, *Absolute Maximum Ratings*.
+- H. Johnson y M. Graham, *High-Speed Digital Design: A Handbook of Black Magic*: ancho de banda de un flanco, longitud crítica, ringing, desacople.
