@@ -37,21 +37,21 @@ $$
 ### Varianza
 
 $$
-\operatorname{Var}(X) = \sigma^2 = E\big[(X-\mu)^2\big] = \int_{-\infty}^{\infty} (x-\mu)^2 f_X(x)\,dx
+\text{Var}(X) = \sigma^2 = E[(X-\mu)^2] = \int_{-\infty}^{\infty} (x-\mu)^2 f_X(x)\,dx
 $$
 
-$\sigma = \sqrt{\operatorname{Var}(X)}$ tiene las mismas unidades que $X$; la varianza, las unidades al cuadrado.
+$\sigma = \sqrt{\text{Var}(X)}$ tiene las mismas unidades que $X$; la varianza, las unidades al cuadrado.
 
 ### Propiedades
 
 | Propiedad | Vale | Comentario |
 |---|---|---|
 | $E[aX + bY + c] = a\,E[X] + b\,E[Y] + c$ | siempre | linealidad: no requiere independencia |
-| $\operatorname{Var}(aX + b) = a^2\operatorname{Var}(X)$ | siempre | trasladar no cambia la dispersión; escalar la multiplica |
-| $\operatorname{Var}(X) = E[X^2] - \mu^2$ | siempre | útil en papel; mala numéricamente si $\mu \gg \sigma$ (resta de dos números casi iguales) |
-| $\operatorname{Cov}(X,Y) = E[(X-\mu_X)(Y-\mu_Y)] = E[XY] - \mu_X\mu_Y$ | siempre | mide cuánto varían juntas |
-| $\operatorname{Var}(X \pm Y) = \operatorname{Var}(X) + \operatorname{Var}(Y) \pm 2\operatorname{Cov}(X,Y)$ | siempre | |
-| $E[XY] = E[X]\,E[Y]$, $\operatorname{Cov}(X,Y) = 0$ | si son independientes | la covarianza nula no implica independencia |
+| $\text{Var}(aX + b) = a^2\text{Var}(X)$ | siempre | trasladar no cambia la dispersión; escalar la multiplica |
+| $\text{Var}(X) = E[X^2] - \mu^2$ | siempre | útil en papel; mala numéricamente si $\mu \gg \sigma$ (resta de dos números casi iguales) |
+| $\text{Cov}(X,Y) = E[(X-\mu_X)(Y-\mu_Y)] = E[XY] - \mu_X\mu_Y$ | siempre | mide cuánto varían juntas |
+| $\text{Var}(X \pm Y) = \text{Var}(X) + \text{Var}(Y) \pm 2\text{Cov}(X,Y)$ | siempre | |
+| $E[XY] = E[X]\,E[Y]$, $\text{Cov}(X,Y) = 0$ | si son independientes | la covarianza nula no implica independencia |
 
 Consecuencia de las dos últimas filas: **restar dos mediciones independientes no cancela su ruido, lo suma** ($\sigma^2_{X-Y} = \sigma_X^2 + \sigma_Y^2$). Lo que se cancela al restar es la parte **común**, la que está correlacionada entre las dos. En eso se basan las mediciones diferenciales.
 
@@ -64,11 +64,11 @@ Una densidad es una distribución de masa sobre una varilla, con masa total 1.
 | $f_X(x)$ | densidad lineal de masa |
 | normalización, $\int f = 1$ | masa total 1 |
 | $\mu$ | centro de masa |
-| $\operatorname{Var}(X)$ | momento de inercia respecto del centro de masa |
+| $\text{Var}(X)$ | momento de inercia respecto del centro de masa |
 | $\sigma$ | radio de giro |
 | $E[X^2]$ | momento de inercia respecto del origen |
-| $E[X^2] = \operatorname{Var}(X) + \mu^2$ | teorema de Steiner |
-| $\operatorname{Var}(aX+b) = a^2\operatorname{Var}(X)$ | trasladar la varilla no cambia su momento; estirarla por $a$ lo multiplica por $a^2$ |
+| $E[X^2] = \text{Var}(X) + \mu^2$ | teorema de Steiner |
+| $\text{Var}(aX+b) = a^2\text{Var}(X)$ | trasladar la varilla no cambia su momento; estirarla por $a$ lo multiplica por $a^2$ |
 | uniforme de ancho $L$: $\sigma^2 = L^2/12$ | varilla homogénea: $I_{CM} = ML^2/12$ |
 
 ---
@@ -134,7 +134,7 @@ $$
 la varianza es
 
 $$
-\operatorname{Var}(X)=\frac{a^2}{3}
+\text{Var}(X)=\frac{a^2}{3}
 $$
 
 y la desviación estándar es
@@ -156,7 +156,7 @@ $$
 Por lo tanto:
 
 $$
-\operatorname{Var}(e)=\frac{\Delta^2}{12}
+\text{Var}(e)=\frac{\Delta^2}{12}
 $$
 
 $$
@@ -198,10 +198,10 @@ f_X(x) = \frac{a - \lvert x - c\rvert}{a^2}, \qquad \lvert x - c\rvert \le a
 $$
 
 $$
-E[X] = c, \qquad \operatorname{Var}(X) = \frac{a^2}{6}
+E[X] = c, \qquad \text{Var}(X) = \frac{a^2}{6}
 $$
 
-Se usa cuando se sabe que el valor está en $\pm a$ y que los valores centrales son más probables que los extremos. Aparece también como suma de dos uniformes independientes del mismo ancho. La **trapezoidal** es el caso de dos uniformes de anchos distintos: con semiancho $a$ y techo de semiancho $\beta a$, $\operatorname{Var} = a^2(1+\beta^2)/6$.
+Se usa cuando se sabe que el valor está en $\pm a$ y que los valores centrales son más probables que los extremos. Aparece también como suma de dos uniformes independientes del mismo ancho. La **trapezoidal** es el caso de dos uniformes de anchos distintos: con semiancho $a$ y techo de semiancho $\beta a$, $\text{Var} = a^2(1+\beta^2)/6$.
 
 ---
 
@@ -212,7 +212,7 @@ Distribución **continua** del tiempo entre eventos de un proceso de Poisson de 
 $$
 f_T(t) = \lambda e^{-\lambda t}, \quad t \ge 0,
 \qquad
-E[T] = \frac1\lambda, \qquad \operatorname{Var}(T) = \frac1{\lambda^2}
+E[T] = \frac1\lambda, \qquad \text{Var}(T) = \frac1{\lambda^2}
 $$
 
 - **Sin memoria:** la probabilidad de esperar $t$ más no depende de cuánto se esperó ya.
@@ -232,7 +232,7 @@ cuando las $X_i$ son normales y σ se **estima** con la desviación estándar mu
 
 - Tiene colas más pesadas que la normal porque $s$ también fluctúa. Con $\nu \to \infty$ tiende a la normal.
 - Cuantil para 95 % bilateral: 2,26 con $\nu = 9$; 2,09 con $\nu = 19$; 1,96 con $\nu = \infty$.
-- $E[T] = 0$ (para $\nu > 1$); $\operatorname{Var}(T) = \nu/(\nu-2)$ (para $\nu > 2$).
+- $E[T] = 0$ (para $\nu > 1$); $\text{Var}(T) = \nu/(\nu-2)$ (para $\nu > 2$).
 
 ---
 
@@ -243,7 +243,7 @@ Distribución **continua** de la suma de los cuadrados de $k$ normales estándar
 $$
 Q = \sum_{i=1}^{k} Z_i^2 \sim \chi^2_k,
 \qquad
-E[Q] = k, \qquad \operatorname{Var}(Q) = 2k
+E[Q] = k, \qquad \text{Var}(Q) = 2k
 $$
 
 Aparece en tres lugares:
@@ -326,7 +326,7 @@ Con $N = 10$ es ~24 %; con $N = 50$, ~10 %. Por eso con pocas muestras el interv
 Modelo $y_i = f(x_i;\theta) + \varepsilon_i$, con $\varepsilon_i \sim N(0, \sigma_i^2)$ independientes. La verosimilitud de los parámetros $\theta$ es
 
 $$
-L(\theta) \propto \prod_i \exp\left(-\frac{\big(y_i - f(x_i;\theta)\big)^2}{2\sigma_i^2}\right)
+L(\theta) \propto \prod_i \exp\left(-\frac{(y_i - f(x_i;\theta))^2}{2\sigma_i^2}\right)
 \qquad\Longrightarrow\qquad
 -2\ln L = \chi^2(\theta) + \text{cte},
 \qquad
@@ -337,17 +337,17 @@ Maximizar $L$ es minimizar $\chi^2$. Los **supuestos** (errores gaussianos, inde
 
 ### Modelo lineal en los parámetros
 
-$y = A\theta + \varepsilon$, con $A$ la matriz de diseño y $W = \operatorname{diag}(1/\sigma_i^2)$:
+$y = A\theta + \varepsilon$, con $A$ la matriz de diseño y $W = \text{diag}(1/\sigma_i^2)$:
 
 $$
 \hat\theta = (A^\top W A)^{-1} A^\top W\,y,
 \qquad
-\operatorname{Cov}(\hat\theta) = (A^\top W A)^{-1}
+\text{Cov}(\hat\theta) = (A^\top W A)^{-1}
 $$
 
 - "Lineal" es en los **parámetros**: $y = a + bx + cx^2$ es lineal; $y = a\,e^{-bx}$ no.
 - La **matriz de covarianza** de los parámetros sale del ajuste. La diagonal da las incertezas; fuera de la diagonal, qué parámetros están correlacionados. Esa correlación hay que propagarla si después se usan los parámetros juntos.
-- Si las $\sigma_i$ no se conocen y se estiman de los residuos, se escala $\operatorname{Cov}(\hat\theta)$ por $\chi^2/\nu$.
+- Si las $\sigma_i$ no se conocen y se estiman de los residuos, se escala $\text{Cov}(\hat\theta)$ por $\chi^2/\nu$.
 
 ### Diagnóstico
 
@@ -363,7 +363,7 @@ $$
 
 1. ¿Por qué hay que normalizar una densidad antes de calcular su media? ¿Qué error aparece si no se hace?
 2. ¿Por qué $E[X]$ es un número y no una función de $x$?
-3. ¿Qué teorema de mecánica es $E[X^2] = \operatorname{Var}(X) + \mu^2$?
+3. ¿Qué teorema de mecánica es $E[X^2] = \text{Var}(X) + \mu^2$?
 4. Restás dos mediciones independientes con el mismo ruido. ¿Qué pasa con la σ? ¿Qué sí se cancela al restar?
 5. ¿Por qué el teorema central del límite justifica usar $k = 2$? ¿Cuándo no lo justifica?
 6. ¿Por qué se divide por $N - 1$? ¿Cuánto vale la incerteza relativa de $s$ con 10 muestras?

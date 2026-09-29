@@ -72,15 +72,15 @@ Los dos primeros se cruzan en cualquier combinación. Ejemplos con una IMU:
 Con $X_1, \dots, X_N$ de igual σ:
 
 $$
-\operatorname{Var}(\bar X)
-= \frac{1}{N^2}\operatorname{Var}\Big(\sum_i X_i\Big)
-= \frac{1}{N^2}\Big(\sum_i \operatorname{Var}(X_i) + \sum_{i\ne j}\operatorname{Cov}(X_i,X_j)\Big)
+\text{Var}(\bar X)
+= \frac{1}{N^2}\text{Var}(\sum_i X_i)
+= \frac{1}{N^2}(\sum_i \text{Var}(X_i) + \sum_{i\ne j}\text{Cov}(X_i,X_j))
 $$
 
 Si son **independientes**, las covarianzas son 0 y queda
 
 $$
-\operatorname{Var}(\bar X) = \frac{\sigma^2}{N}
+\text{Var}(\bar X) = \frac{\sigma^2}{N}
 \qquad\Longrightarrow\qquad
 u(\bar X) = \frac{\sigma}{\sqrt N}
 $$
@@ -95,7 +95,7 @@ Lo que se suma son las **varianzas**, no las σ. Por eso la dispersión de la su
 
 | Situación | Qué pasa |
 |---|---|
-| Muestras correlacionadas (señal filtrada, sobremuestreo) | $\operatorname{Var}(\bar X) > \sigma^2/N$: hay menos información independiente de la que parece |
+| Muestras correlacionadas (señal filtrada, sobremuestreo) | $\text{Var}(\bar X) > \sigma^2/N$: hay menos información independiente de la que parece |
 | Ruido 1/f o random walk | la varianza muestral no converge: cuanto más largo el registro, más grande da |
 | Deriva (temperatura, envejecimiento) | el valor cambia mientras se promedia |
 | Error sistemático | está en todas las lecturas: promediar no lo toca |
@@ -103,7 +103,7 @@ Lo que se suma son las **varianzas**, no las σ. Por eso la dispersión de la su
 Con correlación, en general:
 
 $$
-\operatorname{Var}(\bar X) = \frac{\sigma^2}{N}\left[1 + 2\sum_{k=1}^{N-1}\Big(1-\frac kN\Big)\rho_k\right]
+\text{Var}(\bar X) = \frac{\sigma^2}{N}\left[1 + 2\sum_{k=1}^{N-1}(1-\frac kN)\rho_k\right]
 $$
 
 con $\rho_k$ la autocorrelación a distancia $k$. Para un proceso con $\rho_k = \rho^k$ (autorregresivo de orden 1) y N grande, el corchete tiende a $\frac{1+\rho}{1-\rho}$. Se define un **número efectivo de muestras** $N_\text{eff} = N\,\frac{1-\rho}{1+\rho}$. Por ejemplo, con $\rho = 0{,}5$: $N_\text{eff} = N/3$, y la σ de la media es $\sqrt3 \approx 1{,}7$ veces lo que da la fórmula ingenua.
@@ -143,7 +143,7 @@ En productos y cocientes se trabaja en incertezas **relativas** (%, ppm). Por ej
 ### 4.3 Límites de la linealización y Monte Carlo
 
 La fórmula de 4.1 falla cuando el término de segundo orden no es despreciable frente al primero:
-- funciones muy curvas en la zona de trabajo: $\operatorname{atan}(x/z)$ con $z \to 0$;
+- funciones muy curvas en la zona de trabajo: $\text{atan}(x/z)$ con $z \to 0$;
 - sensibilidad nula en el punto: $Y = X^2$ con $x \approx 0$ da $u_Y = 0$, que es absurdo;
 - salida asimétrica: $\pm U$ deja de ser simétrico en probabilidad.
 
@@ -217,7 +217,7 @@ Tomar la tolerancia $\pm a$ como si fuera σ sobreestima $u$ en un 73 %. Tomarla
 - **Welch–Satterthwaite:**
 
 $$
-\nu_\text{eff} = \frac{u_c^4}{\displaystyle\sum_i \frac{(c_i u_i)^4}{\nu_i}}
+\nu_\text{eff} = \frac{u_c^4}{\sum_i \frac{(c_i u_i)^4}{\nu_i}}
 $$
 
 - $k$ = cuantil de la t de Student con $\nu_\text{eff}$ para la probabilidad elegida. Con $\nu_\text{eff}$ grande, $k = 2$ da ~95 %.

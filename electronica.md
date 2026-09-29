@@ -124,7 +124,7 @@ Z = \frac{V}{I} = R + jX,
 \qquad
 \lvert Z\rvert = \sqrt{R^2 + X^2},
 \qquad
-\varphi = \operatorname{atan}\frac{X}{R}
+\varphi = \text{atan}\frac{X}{R}
 $$
 
 | Elemento | $Z$ | Reactancia $X$ | Fase de la corriente respecto de la tensión |

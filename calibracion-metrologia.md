@@ -64,7 +64,7 @@ SI
 Para un sensor de 3 ejes (acelerómetro, giróscopo, magnetómetro):
 
 $$
-\mathbf{m} = K\,\mathbf{x} + \mathbf{b} + \boldsymbol\varepsilon
+\mathbf{m} = K\,\mathbf{x} + \mathbf{b} + \varepsilon
 $$
 
 | Símbolo | Qué es | Parámetros |
@@ -72,7 +72,7 @@ $$
 | $\mathbf b$ | **sesgo** u offset: lo que indica con entrada cero | 3 |
 | diagonal de $K$ | **factores de escala**: cuánto indica por unidad de entrada | 3 |
 | fuera de la diagonal de $K$ | **desalineación** y no ortogonalidad: cuánto ve cada eje de los otros | 6 |
-| $\boldsymbol\varepsilon$ | ruido → [[senales-ruido#5. Tipos de ruido]] | — |
+| $\varepsilon$ | ruido → [[senales-ruido#5. Tipos de ruido]] | — |
 
 Todos dependen de la **temperatura**: una calibración vale a la temperatura a la que se hizo, salvo que se modele esa dependencia.
 
@@ -114,7 +114,7 @@ El nivelado afecta poco al sesgo y a la escala, y mucho a la desalineación esti
 Una **PT100** es un RTD (*resistance temperature detector*) de platino con $R_0 = 100\ \Omega$ a 0 °C. No es una termocupla. Para $t \ge 0$ °C (IEC 60751):
 
 $$
-R(t) = R_0\,\big(1 + A\,t + B\,t^2\big),
+R(t) = R_0\,(1 + A\,t + B\,t^2),
 \qquad
 A = 3{,}9083\times10^{-3}\ ^\circ\text{C}^{-1},
 \quad
@@ -291,7 +291,7 @@ Validar un instrumento con una señal generada por el mismo sistema que después
 |---|---|
 | Calibrar no es ajustar | calibración (VIM 2.39) ≠ ajuste (3.11) ≠ verificación (2.44) |
 | Trazabilidad = cadena documentada con incertezas | SI → INTI → laboratorio acreditado → patrón → instrumento |
-| Modelo de un sensor de 3 ejes | $\mathbf m = K\mathbf x + \mathbf b + \boldsymbol\varepsilon$ (12 parámetros) |
+| Modelo de un sensor de 3 ejes | $\mathbf m = K\mathbf x + \mathbf b + \varepsilon$ (12 parámetros) |
 | Sesgo y escala con ±g | $b = (m^\uparrow + m^\downarrow)/2$, $S = (m^\uparrow - m^\downarrow)/2g$ |
 | g local, no estándar | la diferencia es ~0,1 % |
 | PT100 | $R = R_0(1 + At + Bt^2)$; lineal cuesta ~0,4 °C |

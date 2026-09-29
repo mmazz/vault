@@ -68,7 +68,7 @@ $$
 Muestreando a $f_s$ solo se puede representar sin ambigüedad el intervalo $[0, f_s/2]$ (frecuencia de Nyquist). Una componente de frecuencia $f$ aparece en
 
 $$
-f_\text{alias} = \big\lvert f - f_s\cdot\operatorname{round}(f/f_s)\big\rvert
+f_\text{alias} = \lvert f - f_s\cdot\text{round}(f/f_s)\rvert
 $$
 
 El espectro se "pliega" alrededor de los múltiplos de $f_s/2$. Por ejemplo, 130 Hz muestreados a 100 Hz aparecen en 30 Hz.
@@ -221,7 +221,7 @@ El ENBW es mayor que el ancho de banda a −3 dB: por un factor $\pi/2$ en un fi
 Se parte el registro en bloques de duración τ, se promedia cada bloque ($\bar y_k$) y se mide cuánto cambia el promedio de un bloque al siguiente:
 
 $$
-\sigma_A^2(\tau) = \tfrac12\,E\big[(\bar y_{k+1} - \bar y_k)^2\big]
+\sigma_A^2(\tau) = \tfrac12\,E[(\bar y_{k+1} - \bar y_k)^2]
 $$
 
 - Se calcula para muchos τ y se grafica $\sigma_A(\tau)$ en log-log.
@@ -297,7 +297,7 @@ Nació para caracterizar relojes: la magnitud es la frecuencia fraccional $y = \
 |---|---|
 | Error de cuantización (si el error barre el paso) | $\sigma_q = \Delta/\sqrt{12}$ |
 | Resolución ≠ exactitud | LSB vs offset, ganancia y temperatura |
-| Lo que está por encima de $f_s/2$ se pliega | $f_\text{alias} = \lvert f - f_s\operatorname{round}(f/f_s)\rvert$ |
+| Lo que está por encima de $f_s/2$ se pliega | $f_\text{alias} = \lvert f - f_s\text{round}(f/f_s)\rvert$ |
 | El antialiasing va antes de muestrear o decimar | — |
 | Resolución en frecuencia = 1 / duración | $\Delta f = f_s/N$ |
 | Densidad de ruido → rms | $\sigma = n\sqrt{\text{ENBW}}$ |
